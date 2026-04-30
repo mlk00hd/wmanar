@@ -90,7 +90,7 @@
                 author: item?.author || 'Administration',
                 photographer: item?.photographer || '',
                 acceptedFormats: item?.acceptedFormats || 'JPG, PNG, WEBP',
-                date: item?.date || new Date().toISOString().split('T')[0],
+                date: item?.date || new Date().toLocaleDateString('fr-FR'),
                 dataUrl: item?.dataUrl || item?.image || '../assets/images/default-image.jpg'
             };
         }
@@ -106,7 +106,7 @@
                 author: item?.author || 'Administration',
                 photographer: item?.photographer || '',
                 acceptedFormats: item?.acceptedFormats || 'MP4, WebM, MOV',
-                date: item?.date || new Date().toISOString().split('T')[0],
+                date: item?.date || new Date().toLocaleDateString('fr-FR'),
                 dataUrl: item?.dataUrl || item?.url || '',
                 thumbnail: item?.thumbnail || '../assets/images/default-video.jpg'
             };
@@ -123,7 +123,7 @@
                 author: item?.author || 'Administration',
                 photographer: item?.photographer || '',
                 acceptedFormats: item?.acceptedFormats || 'JPG, PNG, WEBP, MP4',
-                date: item?.date || new Date().toISOString().split('T')[0],
+                date: item?.date || new Date().toLocaleDateString('fr-FR'),
                 coverDataUrl: item?.coverDataUrl || item?.cover || '../assets/images/default-album.jpg',
                 items: Array.isArray(item?.items) ? item.items : []
             };
