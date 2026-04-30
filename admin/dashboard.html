@@ -2404,15 +2404,15 @@ class AdminApp {
                 readonly: []
             },
             'statistiques-finance': {
-                editable: ['dashboard', 'finances', 'statistiques', 'factures', 'materiel'],
+                editable: ['finances', 'statistiques', 'factures', 'materiel'],
                 readonly: ['equipes', 'utilisateurs', 'resultats']
             },
             evenements: {
-                editable: ['dashboard', 'evenements', 'planning', 'galerie', 'resultats'],
+                editable: ['evenements', 'planning', 'galerie', 'resultats'],
                 readonly: ['utilisateurs', 'equipes']
             },
             utilisateurs: {
-                editable: ['dashboard', 'utilisateurs', 'messages', 'equipes', 'athletesAdmin'],
+                editable: ['utilisateurs', 'messages', 'equipes', 'athletesAdmin'],
                 readonly: []
             }
         };
@@ -4115,8 +4115,18 @@ class AdminApp {
         });
         this._pendingImageData = null;
         localStorage.setItem('gallery', JSON.stringify(this.gallery));
+        localStorage.setItem('galleryPhotos', JSON.stringify(this.gallery.map(item => ({
+            id: item.id,
+            title: item.title,
+            description: item.description || '',
+            category: item.category || 'evenements',
+            date: item.date,
+            image: item.dataUrl || item.image || '',
+            author: item.author || 'Admin'
+        }))));
+        window.dispatchEvent(new Event('storage'));
         this.closeModal(); this.renderGalleryGrid();
-        this.toast(`Photo "${title}" publi?e`, 'success');
+        this.toast(`Photo "${title}" publiée et synchronisée`, 'success');
     }
 
     /* ===== ADD SESSION MODAL ===== */
@@ -4595,6 +4605,13 @@ class AdminApp {
             return (dateB?.getTime() || 0) - (dateA?.getTime() || 0);
         });
     }
+    formatDateDMY(value) {
+        if (!value) return '';
+        const dt = new Date(value);
+        if (Number.isNaN(dt.getTime())) return value;
+        return dt.toLocaleDateString('fr-FR');
+    }
+
     formatDate(value) {
         const date = this.parseDateValue(value);
         return date ? this.normalizeDateInput(date) : (value ? this.escapeHtml(value) : '-');

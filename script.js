@@ -2136,15 +2136,18 @@ class FormManager {
     async handleRegistration(data, formElement) {
         try {
             const fileInputs = formElement.querySelectorAll('input[type="file"]');
-            const files = {};
+            const files = [];
             
             for (const input of fileInputs) {
                 if (input.files && input.files[0]) {
-                    files[input.name] = {
-                        name: input.files[0].name,
-                        size: input.files[0].size,
-                        type: input.files[0].type
-                    };
+                    const f = input.files[0];
+                    files.push({
+                        field: input.name || input.id || 'document',
+                        name: f.name,
+                        size: f.size,
+                        type: f.type,
+                        lastModified: f.lastModified || Date.now()
+                    });
                 }
             }
             
@@ -2152,7 +2155,7 @@ class FormManager {
             data.userType = formElement.querySelector('#userType')?.value || 'athlete';
             data.role = data.userType;
             data.dateNaissance = window.ManarDate.toStorage(data.dateNaissance);
-            data.registrationDate = new Date().toISOString();
+            data.registrationDate = new Date().toLocaleDateString('fr-FR');
             data.status = 'active';
             
             const users = JSON.parse(localStorage.getItem('users') || '[]');
