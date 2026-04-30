@@ -1514,9 +1514,17 @@
             </section>
 
             <section id="athletesAdmin" class="section">
-                <div class="section-top">
+                <div class="section-top" style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px">
                     <h2><i class="fas fa-id-badge"></i> Gestion athlètes</h2>
-                    <div style="display:flex;gap:10px">
+                    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+                        <div class="input-group" style="min-width:260px;max-width:360px">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" id="athleteSearchInput" placeholder="Rechercher par nom" oninput="app.renderAthleteManagement()" onkeydown="if(event.key==='Escape'){app.clearAthleteSearch();}" aria-label="Rechercher un athlète par nom">
+                            <button class="btn btn-light" id="athleteSearchClearBtn" type="button" onclick="app.clearAthleteSearch()" title="Effacer la recherche" style="display:none">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <span id="athleteSearchCount" style="font-size:.9rem;color:var(--gray-600);min-width:120px"></span>
                         <button class="btn btn-primary" onclick="app.exportAthleteList('all')">
                             <i class="fas fa-download"></i> Exporter tout
                         </button>
@@ -2518,18 +2526,60 @@ class AdminApp {
         });
     }
 
+    normalizeSearchText(value) {
+        return String(value || '')
+            .normalize('NFD')
+            .replace(/[̀-ͯ]/g, '')
+            .toLowerCase()
+            .trim();
+    }
+
+    clearAthleteSearch() {
+        const searchInput = document.getElementById('athleteSearchInput');
+        if (!searchInput) return;
+        searchInput.value = '';
+        searchInput.focus();
+        this.renderAthleteManagement();
+    }
+
+    updateAthleteSearchUi(totalAthletes, filteredCount, hasSearchTerm) {
+        const clearBtn = document.getElementById('athleteSearchClearBtn');
+        const counter = document.getElementById('athleteSearchCount');
+        if (clearBtn) clearBtn.style.display = hasSearchTerm ? 'inline-flex' : 'none';
+        if (!counter) return;
+        counter.textContent = hasSearchTerm
+            ? `${filteredCount} / ${totalAthletes} résultat${filteredCount > 1 ? 's' : ''}`
+            : `${totalAthletes} athlète${totalAthletes > 1 ? 's' : ''}`;
+    }
+
     renderAthleteManagement() {
         const tbody = document.getElementById('athleteAdminBody');
         if (!tbody) return;
         this.syncAthleteTracking();
         const athletes = this.users.filter(u => (u.role || u.userType) === 'athlete' && u.status === 'active');
+        const searchInput = document.getElementById('athleteSearchInput');
+        const searchTerm = this.normalizeSearchText(searchInput?.value || '');
+        const filteredAthletes = searchTerm
+            ? athletes.filter(athlete => {
+                const fullName = this.normalizeSearchText(`${athlete.prenom || ''} ${athlete.nom || ''}`);
+                const reverseName = this.normalizeSearchText(`${athlete.nom || ''} ${athlete.prenom || ''}`);
+                return fullName.includes(searchTerm) || reverseName.includes(searchTerm);
+            })
+            : athletes;
+
+        this.updateAthleteSearchUi(athletes.length, filteredAthletes.length, Boolean(searchTerm));
 
         if (!athletes.length) {
             tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;color:var(--gray-500);padding:24px">Aucun athlète validé.</td></tr>';
             return;
         }
 
-        tbody.innerHTML = athletes.map(athlete => {
+        if (!filteredAthletes.length) {
+            tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;color:var(--gray-500);padding:24px">Aucun athlète ne correspond à la recherche.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = filteredAthletes.map(athlete => {
             const tracking = this.athleteTracking[athlete.id];
             return `
                 <tr>
