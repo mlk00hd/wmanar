@@ -9,6 +9,14 @@
         legacy: 'gallery'
     };
 
+
+    function toDdMmYyyy(value) {
+        if (!value) return new Date().toLocaleDateString('fr-FR');
+        if (/^\d{2}\/\d{2}\/\d{4}$/.test(String(value).trim())) return String(value).trim();
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? new Date().toLocaleDateString('fr-FR') : date.toLocaleDateString('fr-FR');
+    }
+
     const CATEGORY_OPTIONS = [
         { value: 'competitions', label: 'Compétition' },
         { value: 'evenements', label: 'Événement' },
@@ -72,7 +80,7 @@
             author: item?.author || 'Administration',
             photographer: item?.photographer || '',
             acceptedFormats: item?.acceptedFormats || 'JPG, PNG, WEBP',
-            date: item?.date || new Date().toISOString().split('T')[0],
+            date: item?.date || new Date().toLocaleDateString('fr-FR'),
             dataUrl: item?.dataUrl || item?.image || ''
         };
     }
@@ -88,7 +96,7 @@
             author: item?.author || 'Administration',
             photographer: item?.photographer || '',
             acceptedFormats: item?.acceptedFormats || 'MP4, WebM, MOV',
-            date: item?.date || new Date().toISOString().split('T')[0],
+            date: item?.date || new Date().toLocaleDateString('fr-FR'),
             dataUrl: item?.dataUrl || item?.url || '',
             thumbnail: item?.thumbnail || '../assets/images/default-video.jpg'
         };
@@ -105,7 +113,7 @@
             author: item?.author || 'Administration',
             photographer: item?.photographer || '',
             acceptedFormats: item?.acceptedFormats || 'JPG, PNG, WEBP, MP4',
-            date: item?.date || new Date().toISOString().split('T')[0],
+            date: item?.date || new Date().toLocaleDateString('fr-FR'),
             coverDataUrl: item?.coverDataUrl || item?.cover || '',
             items: Array.isArray(item?.items) ? item.items : []
         };
@@ -340,7 +348,7 @@
                 author: document.getElementById('galleryAuthor')?.value.trim() || 'Administration',
                 photographer: document.getElementById('galleryPhotographer')?.value.trim() || '',
                 acceptedFormats: document.getElementById('galleryAcceptedFormats')?.value.trim() || '',
-                date: document.getElementById('galleryDate')?.value || new Date().toLocaleDateString('fr-FR')
+                date: toDdMmYyyy(document.getElementById('galleryDate')?.value)
             };
             try {
                 if (type === 'photo') {
