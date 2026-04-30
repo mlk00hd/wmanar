@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -2418,6 +2418,17 @@ class AdminApp {
         };
         return configs[key] || configs.principal;
     }
+    
+    getVisibleTabs(adminFunction) {
+        const key = adminFunction || 'principal';
+        const tabs = {
+            principal: ['dashboard', 'utilisateurs', 'athletesAdmin', 'equipes', 'planning', 'evenements', 'materiel', 'galerie', 'messages', 'factures', 'finances', 'statistiques', 'resultats', 'parametres'],
+            'statistiques-finance': ['finances', 'statistiques', 'factures', 'materiel', 'equipes', 'utilisateurs', 'resultats'],
+            evenements: ['evenements', 'planning', 'galerie', 'resultats', 'utilisateurs', 'equipes'],
+            utilisateurs: ['utilisateurs', 'messages', 'equipes', 'athletesAdmin']
+        };
+        return tabs[key] || tabs.principal;
+    }
 
     canEditSection(name) {
         return !!this.adminConfig?.editable?.includes(name);
@@ -4102,9 +4113,9 @@ class AdminApp {
 
     submitAddImage() {
         const title = document.getElementById('imgTitle')?.value.trim();
-        if (!this._pendingImageData) { this.toast('Veuillez s?lectionner une photo', 'warning'); return; }
+        if (!this._pendingImageData) { this.toast('Veuillez sélectionner une photo', 'warning'); return; }
         if (!title) { this.toast('Titre obligatoire', 'warning'); return; }
-        this.gallery.push({
+        const newImage = {
             id: Date.now(), title,
             description: document.getElementById('imgDesc')?.value||'',
             date: new Date().toISOString().split('T')[0],
@@ -4112,7 +4123,8 @@ class AdminApp {
             author: document.getElementById('imgAuthor')?.value.trim()||'Admin',
             dataUrl: this._pendingImageData,
             likes: 0, views: 0
-        });
+        };
+        this.gallery.push(newImage);
         this._pendingImageData = null;
         localStorage.setItem('gallery', JSON.stringify(this.gallery));
         localStorage.setItem('galleryPhotos', JSON.stringify(this.gallery.map(item => ({
@@ -4125,8 +4137,11 @@ class AdminApp {
             author: item.author || 'Admin'
         }))));
         window.dispatchEvent(new Event('storage'));
-        this.closeModal(); this.renderGalleryGrid();
-        this.toast(`Photo "${title}" publiée et synchronisée`, 'success');
+        this.toast(`Photo "${title}" publiée avec succès`, 'success');
+        setTimeout(() => {
+            this.closeModal();
+            this.renderGalleryGrid();
+        }, 500);
     }
 
     /* ===== ADD SESSION MODAL ===== */
