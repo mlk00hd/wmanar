@@ -37,7 +37,6 @@
                         <li><a href="historique.html"><i class="fas fa-history"></i> Historique</a></li>
                         <li><a href="equipes.html"><i class="fas fa-users"></i> Équipes</a></li>
                         <li><a href="planning.html"><i class="fas fa-calendar-alt"></i> Planning</a></li>
-                        <li><a href="tarifs.html"><i class="fas fa-tags"></i> Tarifs</a></li>
                         <li><a href="actualites.html"><i class="fas fa-newspaper"></i> Actualités</a></li>
                         <li><a href="galerie.html" class="active"><i class="fas fa-images"></i> Galerie</a></li>
                         <!-- Liens de connexion (cach&eacute;s si connect&eacute;) -->
@@ -92,7 +91,7 @@
     <section class="page-hero galerie-hero">
         <div class="container">
             <div class="hero-content">
-                <h1>Galerie Photos & Vid&eacute;os</h1>
+                <h1>Galerie</h1>
                 <p>Découvrez les moments forts de notre association en images</p>
             </div>
         </div>
@@ -103,7 +102,7 @@
         <div class="container">
             <div class="nav-tabs">
                 <button class="nav-tab active" data-gallery="photos">
-                    <i class="fas fa-camera"></i> Photos
+                    <i class="fas fa-camera"></i> Photo
                 </button>
                 <button class="nav-tab" data-gallery="videos">
                     <i class="fas fa-video"></i> Vid&eacute;os
@@ -116,10 +115,7 @@
             <!-- Actions - VISIBLES UNIQUEMENT POUR ADMIN -->
             <div class="gallery-actions" id="galleryAdminActions" style="display: none;">
                 <button class="btn btn-primary" id="uploadMedia">
-                    <i class="fas fa-upload"></i> Ajouter une photo
-                </button>
-                <button class="btn btn-secondary" id="createAlbum">
-                    <i class="fas fa-plus-circle"></i> Créer un album
+                    <i class="fas fa-upload"></i> D&eacute;poser
                 </button>
             </div>
         </div>
@@ -129,34 +125,19 @@
     <section class="gallery-filters">
         <div class="container">
             <div class="filters-container">
-                <div class="category-filters">
-                    <button class="category-btn active" data-category="all">
-                        <i class="fas fa-globe"></i> Toutes les catégories
-                    </button>
-                    <button class="category-btn" data-category="competitions">
-                        <i class="fas fa-trophy"></i> Compétitions
-                    </button>
-                    <button class="category-btn" data-category="entrainements">
-                        <i class="fas fa-dumbbell"></i> Entraînements
-                    </button>
-                    <button class="category-btn" data-category="evenements">
-                        <i class="fas fa-calendar-star"></i> Événements
-                    </button>
-                    <button class="category-btn" data-category="equipes">
-                        <i class="fas fa-users"></i> Équipes
-                    </button>
-                    <button class="category-btn" data-category="infrastructures">
-                        <i class="fas fa-building"></i> Infrastructures
-                    </button>
-                </div>
-                
                 <div class="date-filter">
-                    <select id="dateFilter" class="form-select">
-                        <option value="all">Toutes les dates</option>
-                        <option value="2024">2024</option>
-                        <option value="2023">2023</option>
-                        <option value="2022">2022</option>
-                        <option value="2021">2021</option>
+                    <select id="categoryFilter" class="form-select">
+                        <option value="all">Toutes les cat&eacute;gories</option>
+                    </select>
+                </div>
+                <div class="date-filter">
+                    <select id="sportFilter" class="form-select">
+                        <option value="all">Tous les sports</option>
+                    </select>
+                </div>
+                <div class="date-filter">
+                    <select id="dateFilter" class="form-select" multiple size="4">
+                        <option value="all">Toutes les ann&eacute;es</option>
                     </select>
                 </div>
             </div>
@@ -226,18 +207,16 @@
                         <li><a href="historique.html">Historique</a></li>
                         <li><a href="equipes.html">Équipes</a></li>
                         <li><a href="planning.html">Planning</a></li>
-                        <li><a href="tarifs.html">Tarifs</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-col">
                     <h4>Cat&eacute;gories</h4>
                     <ul>
-                        <li><a href="#" data-category="competitions">Compétitions</a></li>
-                        <li><a href="#" data-category="entrainements">Entraînements</a></li>
-                        <li><a href="#" data-category="evenements">Événements</a></li>
-                        <li><a href="#" data-category="equipes">Équipes</a></li>
-                        <li><a href="#" data-category="infrastructures">Infrastructures</a></li>
+                        <li><a href="#" data-category="competitions">Comp&eacute;titions</a></li>
+                        <li><a href="#" data-category="entrainements">Entra&icirc;nements</a></li>
+                        <li><a href="#" data-category="evenements">&Eacute;v&eacute;nements</a></li>
+                        <li><a href="#" data-category="evenements">Actualit&eacute;s visuelles</a></li>
                     </ul>
                 </div>
                 
@@ -295,34 +274,12 @@
     <div id="uploadModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3><i class="fas fa-upload"></i> Ajouter une photo</h3>
+                <h3><i class="fas fa-upload"></i> D&eacute;poser</h3>
                 <button class="modal-close" id="closeUploadModal">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="uploadForm">
-                    <div class="form-group">
-                        <label for="uploadTitle">Titre *</label>
-                        <input type="text" id="uploadTitle" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="uploadDescription">Description</label>
-                        <textarea id="uploadDescription" class="form-control" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="uploadCategory">Cat&eacute;gorie *</label>
-                        <select id="uploadCategory" class="form-control" required>
-                            <option value="">Choisir...</option>
-                            <option value="competitions">Compétitions</option>
-                            <option value="entrainements">Entraînements</option>
-                            <option value="evenements">Événements</option>
-                            <option value="equipes">Équipes</option>
-                            <option value="infrastructures">Infrastructures</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="uploadImage">Image *</label>
-                        <input type="file" id="uploadImage" accept="image/*" class="form-control" required>
-                    </div>
+                    <div id="uploadModalContent"></div>
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">Publier</button>
                         <button type="button" class="btn btn-secondary" id="cancelUpload">Annuler</button>
@@ -353,11 +310,9 @@
                     <div class="form-group">
                         <label for="editCategory">Cat&eacute;gorie *</label>
                         <select id="editCategory" class="form-control" required>
-                            <option value="competitions">Compétitions</option>
-                            <option value="entrainements">Entraînements</option>
-                            <option value="evenements">Événements</option>
-                            <option value="equipes">Équipes</option>
-                            <option value="infrastructures">Infrastructures</option>
+                            <option value="competitions">Comp&eacute;titions</option>
+                            <option value="entrainements">Entra&icirc;nements</option>
+                            <option value="evenements">&Eacute;v&eacute;nements</option>
                         </select>
                     </div>
                     <div class="form-actions">

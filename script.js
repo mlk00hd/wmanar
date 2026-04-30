@@ -130,9 +130,6 @@ class ManarSportApp {
             case 'equipes':
                 this.initTeamsPage();
                 break;
-            case 'tarifs':
-                this.initTarifsPage();
-                break;
             case 'actualites':
                 this.initActualitesPage();
                 break;
@@ -165,7 +162,6 @@ class ManarSportApp {
         if (filename.includes('galerie')) return 'galerie';
         if (filename.includes('planning')) return 'planning';
         if (filename.includes('equipes')) return 'equipes';
-        if (filename.includes('tarifs')) return 'tarifs';
         if (filename.includes('actualites')) return 'actualites';
         if (filename.includes('historique')) return 'historique';
         if (filename.includes('profil')) return 'profil';
@@ -539,6 +535,26 @@ document.head.appendChild(style);
         
         // DÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©finir le lien de dÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©connexion
         this.setupLogoutButton();
+
+        const heroCta = document.getElementById('heroPrimaryCta');
+        if (heroCta) {
+            heroCta.textContent = 'Voir mon profil';
+            heroCta.href = 'pages/profil.html';
+        }
+    }
+
+    showLoginError(message) {
+        const errorBox = document.getElementById('loginErrorMessage');
+        if (!errorBox) return;
+        errorBox.textContent = message;
+        errorBox.style.display = 'block';
+    }
+
+    clearLoginError() {
+        const errorBox = document.getElementById('loginErrorMessage');
+        if (!errorBox) return;
+        errorBox.textContent = '';
+        errorBox.style.display = 'none';
     }
 
     hideAuthLinks() {
@@ -1355,16 +1371,12 @@ document.head.appendChild(style);
             const password = document.getElementById('password')?.value;
             
             if (!email || !password) {
-                if (this.notifications) {
-                    this.notifications.show('Veuillez remplir tous les champs', 'error');
-                }
+                this.showLoginError('Email ou mot de passe incorrect');
                 return;
             }
             
             if (!this.isValidEmail(email)) {
-                if (this.notifications) {
-                    this.notifications.show('Format d\'email invalide', 'error');
-                }
+                this.showLoginError('Email ou mot de passe incorrect');
                 return;
             }
             
@@ -1381,6 +1393,7 @@ document.head.appendChild(style);
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Se connecter';
             }
+            if (success) this.clearLoginError();
         });
         
         // Gestion du lien "Mot de passe oubliÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©"
@@ -1488,10 +1501,6 @@ document.head.appendChild(style);
 
     initTeamsPage() {
         console.log('Page ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©quipes initialisÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e');
-    }
-
-    initTarifsPage() {
-        console.log('Page tarifs initialisÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©e');
     }
 
     initActualitesPage() {
@@ -2001,8 +2010,8 @@ class FormManager {
                 break;
                 
             case 'password':
-                if (value.length < 8) {
-                    this.showFieldError(field, 'Le mot de passe doit contenir au moins 8 caractÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¨res');
+                if (!this.validateStrongPassword(value)) {
+                    this.showFieldError(field, 'Au moins 8 caractères, une majuscule, une minuscule et un chiffre.');
                     return false;
                 }
                 break;
@@ -2092,6 +2101,10 @@ class FormManager {
     validateDate(date) {
         if (!date) return false;
         return !!window.ManarDate.parse(date);
+    }
+
+    validateStrongPassword(password) {
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
     }
 
     validateCodeOption(code) {
@@ -2688,6 +2701,9 @@ class AuthManager {
             this.currentUser = { ...user };
             delete this.currentUser.password;
             this.setCurrentUser(this.currentUser);
+            if (window.app && typeof window.app.clearLoginError === 'function') {
+                window.app.clearLoginError();
+            }
             
             if (window.app && window.app.notifications) {
                 window.app.notifications.show('Connexion rÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©ussie! Redirection...', 'success');
@@ -2705,8 +2721,8 @@ class AuthManager {
             return true;
         }
         
-        if (window.app && window.app.notifications) {
-            window.app.notifications.show('Email ou mot de passe incorrect', 'error');
+        if (window.app && typeof window.app.showLoginError === 'function') {
+            window.app.showLoginError('Email ou mot de passe incorrect');
         }
         
         return false;

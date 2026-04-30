@@ -1,0 +1,121 @@
+const fs = require('fs');
+const path = require('path');
+
+const replacements = {
+  'D?connexion': 'Déconnexion',
+  'D?f?connexion': 'Déconnexion',
+  'Espace Athl?te': 'Espace Athlète',
+  'Athl?te': 'Athlète',
+  'Athl?f?te': 'Athlète',
+  'athl?f?tes': 'athlètes',
+  'Mes athl?f?tes': 'Mes athlètes',
+  'S?ances ? venir': 'Séances à venir',
+  'S?ances': 'Séances',
+  'S?f?ances': 'Séances',
+  'G?f?rez': 'Gérez',
+  'g?f?rez': 'gérez',
+  'Taux de pr?f?sence': 'Taux de présence',
+  'Charg?f? dynamiquement': 'Chargé dynamiquement',
+  'Cr?f?er S?f?ance': 'Créer Séance',
+  'entra?f?neur': 'entraîneur',
+  'athl?f?tes ?f? se d?f?passer': 'athlètes à se dépasser',
+  'àv?nement': 'événement',
+  '?&eacute;v&eacute;nement': 'Événement',
+  'Ajouter un àv?nement': 'Ajouter un événement',
+  'Détails àv?nement': 'Détails événement',
+  'Actualità': 'Actualités',
+  '?à la une': 'À la une',
+  'Cet àv?nement': 'Cet événement',
+  'Notre àquipe': 'Notre équipe',
+  'Rechercher une àquipe...': 'Rechercher une équipe...',
+  'Rejoindre une à&eacute;quipe': 'Rejoindre une équipe',
+  'Intéressé pour intégrer l\'une de nos Équipes à': 'Intéressé pour intégrer l\'une de nos équipes ?',
+  'Nos coachs àvaluent': 'Nos coachs évaluent',
+  'àtudiants': 'étudiants',
+  'àfétudiants': 'étudiants',
+  'illimità': 'illimité',
+  'activitéf?s': 'activités',
+  'Th?fà d?f?tox offert': 'Thé détox offert',
+  'àf???v?f?nements': 'événements',
+  'àf?v?f?nements': 'événements',
+  'esp?f?ces': 'espèces',
+  'àfà': 'à',
+  'Pr?f?t àfà rejoindre notre communautéfà à': 'Prêt à rejoindre notre communauté ?',
+  'd?f?j?fà': 'déjà',
+  'Fr?f?quentes': 'Fréquentes',
+  'Ferm?fà jours f?f?ri?f?s': 'Fermé jours fériés',
+  'Tous droits r?f?serv?f?s.': 'Tous droits réservés.',
+  'fa?onnà': 'façonné',
+  'cr?à': 'créa',
+  'àcole': 'école',
+  'fr?quentent': 'fréquentent',
+  'qualità': 'qualité',
+  'àcrivez': 'écrivez',
+  'Tél?phone': 'Téléphone',
+  'D?jà membre à': 'Déjà membre à',
+  'confidentialità': 'confidentialité',
+  'responsabilità': 'responsabilité',
+  'propri?tà': 'propriété',
+  'Propri?tà intellectuelle': 'Propriété intellectuelle',
+  's?curità': 'sécurité',
+  'pr?f?rences': 'préférences',
+  'param?tres': 'paramètres',
+  'r?initialisation': 'réinitialisation',
+  'R?initialisation': 'Réinitialisation',
+  'à"uvre': 'œuvre',
+  'Qu\'est-ce qu\'un cookie à': 'Qu\'est-ce qu\'un cookie ?',
+  'stockà': 'stocké',
+  'chargà': 'chargé',
+  'non defini': 'non défini',
+  'Voir tout ??????T': 'Voir tout le planning',
+  'r?f?serv?f?e': 'réservée',
+  'Lieu ?f? d?f?finir': 'Lieu à définir',
+  'Lieu a definir': 'Lieu à définir',
+  'Confirm?f?e': 'Confirmée',
+  "Participer ?f? 15 s&eacute;ances": 'Participer à 15 séances',
+  'Aucune s&eacute;ance r?f?serv?f?e pour le moment.': 'Aucune séance réservée pour le moment.',
+  'Paiment en esp?f?ces àfà l\'accueil': 'Paiement en espèces à l\'accueil',
+  '2 photos d\'identit?fà n?f?cessaires': '2 photos d\'identité nécessaires',
+  'Plus de 1,500 membres nous font d?f?j?fà confiance': 'Plus de 1 500 membres nous font déjà confiance',
+  'Questions Fr?f?quentes': 'Questions Fréquentes',
+  'Oui, vous pouvez suspendre votre abonnement jusqu\'?fà 3 mois par an pour vacances ou blessure, sur justificatif.': 'Oui, vous pouvez suspendre votre abonnement jusqu\'à 3 mois par an pour vacances ou blessure, sur justificatif.',
+  'Sport non defini': 'Sport non défini',
+  'R?servations': 'Réservations',
+  'r?servations': 'réservations',
+  'a ?t? retir?e': 'a été retirée',
+  'restez motiv?': 'restez motivé',
+  'Jours cons?cutifs': 'Jours consécutifs',
+  'Horaires àtendus': 'Horaires attendus',
+  'Invità gratuit 1x/mois': 'Invitation gratuite 1x/mois',
+  'Invità gratuit': 'Invitation gratuite',
+  '<!-- Formule àf??&Eacute;lite -->': '<!-- Formule Élite -->',
+  '-23% à partir du 3?me': '-23% à partir du 3ème',
+  'Carte àfétudiante requise': 'Carte étudiante requise',
+  'S\'inscrire àfétudiant': 'S\'inscrire étudiant',
+  'Cours à l\'unit&eacute;fà': 'Cours à l\'unité',
+  '&Eacute;conomisez jusqu\'?fà 25%': 'Économisez jusqu\'à 25%',
+  'événements sp?f?ciaux': 'événements spéciaux',
+  'Gérez vos s&eacute;ances, suivez vos athl?f?tes et consultez le planning': 'Gérez vos séances, suivez vos athlètes et consultez le planning',
+  'Un bon entraîneur ne fait pas que montrer la technique ??,???? il inspire ses athlètes à se dépasser.': 'Un bon entraîneur ne fait pas que montrer la technique par son exemple, il inspire ses athlètes à se dépasser.',
+  'D?f?connexion': 'Déconnexion',
+  'Factures R?f?centes': 'Factures Récentes',
+  '?f?,? jour': 'À jour',
+};
+
+const folder = path.join(__dirname, 'pages');
+const files = fs.readdirSync(folder).filter((file) => file.endsWith('.html'));
+let updates = 0;
+for (const file of files) {
+  const filePath = path.join(folder, file);
+  let text = fs.readFileSync(filePath, 'utf8');
+  const original = text;
+  for (const [oldStr, newStr] of Object.entries(replacements)) {
+    text = text.split(oldStr).join(newStr);
+  }
+  if (text !== original) {
+    fs.writeFileSync(filePath, text, 'utf8');
+    console.log('Updated', file);
+    updates += 1;
+  }
+}
+console.log(`Done: ${updates} files updated`);

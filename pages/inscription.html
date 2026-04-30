@@ -102,7 +102,6 @@
                         <li><a href="historique.html"><i class="fas fa-history"></i> Historique</a></li>
                         <li><a href="equipes.html"><i class="fas fa-users"></i> Équipes</a></li>
                         <li><a href="planning.html"><i class="fas fa-calendar-alt"></i> Planning</a></li>
-                        <li><a href="tarifs.html"><i class="fas fa-tags"></i> Tarifs</a></li>
                         <li><a href="actualites.html"><i class="fas fa-newspaper"></i> Actualités</a></li>
                         <li><a href="galerie.html"><i class="fas fa-images"></i> Galerie</a></li>
                         <li><a href="connexion.html" class="btn-login"><i class="fas fa-sign-in-alt"></i> Connexion</a></li>
@@ -212,6 +211,7 @@
                             <div class="form-group">
                                 <label for="email" class="form-label">Email *</label>
                                 <input type="email" id="email" name="email" class="form-control" required>
+                                <small class="form-hint">Format attendu : nom@gmail.com</small>
                             </div>
                             <div class="form-group">
                                 <label for="telephone" class="form-label">Tél?phone *</label>
@@ -240,7 +240,7 @@
                                         <i class="fas fa-eye"></i>
                                     </button>
                                 </div>
-                                <small class="form-hint">Minimum 8 caract&egrave;res</small>
+                                <small class="form-hint">Au moins 8 caract&egrave;res, une majuscule, une minuscule et un chiffre.</small>
                             </div>
                             <div class="form-group">
                                 <label for="confirmPassword" class="form-label">Confirmer le mot de passe *</label>
@@ -269,18 +269,18 @@
                                 <label for="adminFunction" class="form-label">Fonction *</label>
                                 <select id="adminFunction" name="adminFunction" class="form-select" required>
                                     <option value="">S&eacute;lectionnez une fonction</option>
-                                    <option value="principal">Admin principal (tous les droits)</option>
-                                    <option value="statistiques">Admin des statistiques</option>
-                                    <option value="evenements">Admin des Événements</option>
-                                    <option value="utilisateurs">Admin des utilisateurs</option>
+                                    <option value="principal">Admin principal</option>
+                                    <option value="statistiques-finance">Admin statistiques et finance</option>
+                                    <option value="evenements">Admin événements</option>
+                                    <option value="utilisateurs">Admin utilisateur</option>
                                 </select>
                             </div>
                             
                             <div class="form-group">
                                 <label for="codeOptionAdmin" class="form-label">Code d'option *</label>
                                 <input type="text" id="codeOptionAdmin" name="codeOptionAdmin" class="form-control" 
-                                       pattern="[A-Z]{3}\d{3}" placeholder="Ex: ADM123" required>
-                                <small class="form-hint">Format: 3 lettres majuscules suivies de 3 chiffres</small>
+                                       placeholder="Code d'accès administrateur" required>
+                                <small class="form-hint">Utilisez le code exact du rôle administrateur sélectionné.</small>
                             </div>
                         </div>
                         
@@ -479,7 +479,6 @@
                         <li><a href="historique.html">Historique</a></li>
                         <li><a href="equipes.html">Équipes</a></li>
                         <li><a href="planning.html">Planning</a></li>
-                        <li><a href="tarifs.html">Tarifs</a></li>
                         <li><a href="actualites.html">Actualités</a></li>
                         <li><a href="galerie.html">Galerie</a></li>
                     </ul>
@@ -519,7 +518,7 @@
                 <p>En utilisant ce site, vous acceptez les pr&eacute;sentes conditions d'utilisation.</p>
                 
                 <h4>2. Inscription et compte</h4>
-                <p>Les utilisateurs doivent fournir des informations exactes et maintenir la confidentialità de leur compte.</p>
+                    <p>Les utilisateurs doivent fournir des informations exactes et maintenir la confidentialité de leur compte.</p>
                 
                 <h4>3. Responsabilit?s</h4>
                 <p>L'association d&eacute;cline toute responsabilità pour les blessures survenues pendant les activités sportives.</p>
@@ -575,7 +574,7 @@
                 <ul>
                     <li>Cookies essentiels (connexion, s&eacute;curit&eacute;)</li>
                     <li>Cookies de performance (analyse d'usage)</li>
-                    <li>Cookies de fonctionnalità (pr?f?rences)</li>
+                    <li>Cookies de fonctionnalité (préférences)</li>
                 </ul>
                 
                 <h4>Gestion des cookies</h4>

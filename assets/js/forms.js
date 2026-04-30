@@ -1,12 +1,13 @@
-/**
+﻿/**
  * forms.js - Gestion du formulaire d'inscription
- * CORRECTION : Les fichiers sont convertis en base64 et sauvegardés dans documents[]
- * pour être visibles dans le dashboard admin.
+ * CORRECTION : Les fichiers sont convertis en base64 et sauvegardÃ©s dans documents[]
+ * pour Ãªtre visibles dans le dashboard admin.
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Forms.js chargé');
+    console.log('Forms.js chargÃ©');
     initRegistrationForm();
+    populateSportsFields();
     initFileUploads();
     initDateTextInputs();
     initPasswordToggles();
@@ -62,7 +63,7 @@ function readFileAsBase64(file, options = {}) {
                         size: formatFileSize(Math.round(dataUrl.length * 3 / 4))
                     });
                 };
-                img.onerror = () => reject(new Error('Impossible de charger l'image : ' + file.name));
+                img.onerror = () => reject(new Error("Impossible de charger l'image : " + file.name));
                 img.src = e.target.result;
             } else {
                 resolve({
@@ -117,12 +118,12 @@ function sanitizeStoredUsers(users) {
 async function collectAllDocuments(userType) {
     // Correspondance id-input => label lisible dans le dashboard
     const fileLabels = {
-        diplomeCoach:             "Diplôme d'entraîneur",
-        certificatMedicalCoach:   'Certificat médical',
+        diplomeCoach:             "DiplÃ´me d'entraÃ®neur",
+        certificatMedicalCoach:   'Certificat mÃ©dical',
         photoCoach:               'Photo professionnelle',
         extraitNaissanceCoach:    'Extrait de naissance',
-        certificatMedicalAthlete: 'Certificat médical',
-        photoAthlete:             "Photo d'identité",
+        certificatMedicalAthlete: 'Certificat mÃ©dical',
+        photoAthlete:             "Photo d'identitÃ©",
         extraitNaissanceAthlete:  'Extrait de naissance'
     };
 
@@ -130,7 +131,7 @@ async function collectAllDocuments(userType) {
     const today = new Date().toISOString().split('T')[0];
     const maxDataUrlBytes = 1000000;
 
-    // ── Fichiers simples (1 par champ) ────────────────────────────────────
+    // â”€â”€ Fichiers simples (1 par champ) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     for (const [inputId, label] of Object.entries(fileLabels)) {
         const input = document.getElementById(inputId);
         const fileCount = input && input.files && input.files.length ? input.files.length : 0;
@@ -151,7 +152,7 @@ async function collectAllDocuments(userType) {
             };
 
             const isImage = file.type.startsWith('image/');
-            const shouldStoreData = isImage || (file.size || 0) <= maxDataUrlBytes;
+            const shouldStoreData = isImage;
             if (shouldStoreData) {
                 const fd = await readFileAsBase64(file, { compressImage: isImage, maxSize: isProfilePhoto ? 300 : 600, quality: isProfilePhoto ? 0.65 : 0.75 });
                 if (fd && fd.dataUrl) {
@@ -165,15 +166,15 @@ async function collectAllDocuments(userType) {
         } catch (e) { console.warn('Erreur lecture', inputId, e); }
     }
 
-    // ── Fichiers enfants (plusieurs blocs possibles) ──────────────────────
+    // â”€â”€ Fichiers enfants (plusieurs blocs possibles) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (userType === 'parent') {
         let idx = 1;
         for (const form of document.querySelectorAll('.enfant-form')) {
             const childFields = {
-                certificatMedicalEnfant: `Certificat médical — Enfant ${idx}`,
-                photoEnfant:             `Photo — Enfant ${idx}`,
-                extraitNaissanceEnfant:  `Extrait de naissance — Enfant ${idx}`,
-                permissionParentale:     `Permission parentale — Enfant ${idx}`
+                certificatMedicalEnfant: `Certificat mÃ©dical â€” Enfant ${idx}`,
+                photoEnfant:             `Photo â€” Enfant ${idx}`,
+                extraitNaissanceEnfant:  `Extrait de naissance â€” Enfant ${idx}`,
+                permissionParentale:     `Permission parentale â€” Enfant ${idx}`
             };
             for (const [base, label] of Object.entries(childFields)) {
                 const input = form.querySelector(`input[id^="${base}"], input[name^="${base}"]`);
@@ -194,7 +195,7 @@ async function collectAllDocuments(userType) {
                         dataUrl:  null
                     };
                     const isImage = file.type.startsWith('image/');
-                    const shouldStoreData = isImage || (file.size || 0) <= maxDataUrlBytes;
+                    const shouldStoreData = isImage;
                     if (shouldStoreData) {
                         const fd = await readFileAsBase64(file, { compressImage: isImage, maxSize: isChildPhoto ? 300 : 600, quality: 0.75 });
                         if (fd && fd.dataUrl) {
@@ -219,7 +220,7 @@ async function collectAllDocuments(userType) {
 
 function initRegistrationForm() {
     const form = document.getElementById('registrationForm');
-    if (!form) { console.error('Formulaire non trouvé'); return; }
+    if (!form) { console.error('Formulaire non trouvÃ©'); return; }
 
     setMaxDateForBirthFields();
 
@@ -259,7 +260,7 @@ function initRegistrationForm() {
         });
     });
 
-    // Précédent
+    // PrÃ©cÃ©dent
     form.querySelectorAll('.prev-step').forEach(btn => {
         btn.addEventListener('click', e => {
             e.preventDefault();
@@ -277,7 +278,7 @@ function initRegistrationForm() {
     setupMaladieToggle('hasMaladieAthlete', 'nomMaladieAthlete');
     document.getElementById('ajouterEnfant')?.addEventListener('click', ajouterEnfant);
 
-    // ── SOUMISSION ASYNC ──────────────────────────────────────────────────
+    // â”€â”€ SOUMISSION ASYNC â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
 
@@ -302,10 +303,10 @@ function initRegistrationForm() {
         }
 
         try {
-            // 1. Données texte
+            // 1. DonnÃ©es texte
             const userData = {};
             for (const [key, value] of new FormData(form).entries()) {
-                if (value instanceof File) continue; // fichiers gérés séparément
+                if (value instanceof File) continue; // fichiers gÃ©rÃ©s sÃ©parÃ©ment
                 if (key.endsWith('[]')) {
                     const k = key.slice(0, -2);
                     userData[k] = userData[k] || [];
@@ -315,7 +316,7 @@ function initRegistrationForm() {
                 }
             }
 
-            // 2. Métadonnées
+            // 2. MÃ©tadonnÃ©es
             userData.id               = Date.now();
             userData.role             = userType;
             userData.userType         = userType;
@@ -325,7 +326,7 @@ function initRegistrationForm() {
             userData.createdAt        = new Date().toISOString();
             userData.lastLogin        = null;
 
-            // 3. Infos par rôle
+            // 3. Infos par rÃ´le
             if (userType === 'coach') {
                 userData.sport      = document.getElementById('sportCoach')?.value;
                 userData.specialite = userData.sport;
@@ -349,8 +350,8 @@ function initRegistrationForm() {
                 userData.enfants = getEnfantsData();
             }
 
-            // 4. ★ CONVERSION DES FICHIERS EN BASE64 ★
-            showNotification('Lecture des fichiers en cours…', 'info');
+            // 4. â˜… CONVERSION DES FICHIERS EN BASE64 â˜…
+            showNotification('Lecture des fichiers en coursâ€¦', 'info');
             const documents = await collectAllDocuments(userType);
             const profileDoc = Array.isArray(documents)
                 ? documents.find(d => /photo/i.test(d.name) && d.dataUrl && d.dataUrl.startsWith('data:image'))
@@ -359,7 +360,7 @@ function initRegistrationForm() {
                 userData.profilePicture = profileDoc.dataUrl;
             }
             userData.documents = Array.isArray(documents) ? documents : [];
-            console.log(`✅ ${userData.documents.length} document(s) enregistré(s) avec contenu pour téléchargement`);
+            console.log(`âœ… ${userData.documents.length} document(s) enregistrÃ©(s) avec contenu pour tÃ©lÃ©chargement`);
 
             // 5. Nettoyer le stockage ancien avant nouvelle sauvegarde
             let users = sanitizeStoredUsers(JSON.parse(localStorage.getItem('users') || '[]'));
@@ -370,13 +371,13 @@ function initRegistrationForm() {
                 try {
                     localStorage.removeItem('users');
                     localStorage.setItem('users', JSON.stringify(users));
-                    console.info('Ancien stockage des utilisateurs supprimé, nouvelle valeur écrite.');
+                    console.info('Ancien stockage des utilisateurs supprimÃ©, nouvelle valeur Ã©crite.');
                 } catch (resetError) {
-                    console.error('Réinitialisation du stockage des utilisateurs impossible :', resetError);
+                    console.error('RÃ©initialisation du stockage des utilisateurs impossible :', resetError);
                 }
             }
             if (users.find(u => u.email === userData.email)) {
-                showNotification('Cet email est déjà utilisé.', 'error');
+                showNotification('Cet email est dÃ©jÃ  utilisÃ©.', 'error');
                 submitBtn && (submitBtn.disabled = false, submitBtn.innerHTML = "S'inscrire");
                 return;
             }
@@ -390,10 +391,10 @@ function initRegistrationForm() {
                 try {
                     localStorage.removeItem('users');
                     localStorage.setItem('users', JSON.stringify(users));
-                    console.info('Ancienne clé users réinitialisée puis réécrite.');
+                    console.info('Ancienne clÃ© users rÃ©initialisÃ©e puis rÃ©Ã©crite.');
                 } catch (retryError) {
-                    console.error('Nouvelle tentative échouée:', retryError);
-                    showNotification('Espace de stockage local plein. Réduisez la taille des fichiers ou utilisez un autre navigateur.', 'error');
+                    console.error('Nouvelle tentative Ã©chouÃ©e:', retryError);
+                    showNotification('Espace de stockage local plein. RÃ©duisez la taille des fichiers ou utilisez un autre navigateur.', 'error');
                     submitBtn && (submitBtn.disabled = false, submitBtn.innerHTML = "S'inscrire");
                     return;
                 }
@@ -407,14 +408,14 @@ function initRegistrationForm() {
                 profilePicture: userData.profilePicture || null
             }));
 
-            // 8. Succès
-            const docsMsg = documents.length ? ` (${documents.length} document(s) enregistré(s))` : '';
-            showNotification(`Inscription réussie en tant que ${getRoleLabel(userType)}${docsMsg} ! Redirection…`, 'success');
+            // 8. SuccÃ¨s
+            const docsMsg = documents.length ? ` (${documents.length} document(s) enregistrÃ©(s))` : '';
+            showNotification(`Inscription rÃ©ussie en tant que ${getRoleLabel(userType)}${docsMsg} ! Redirectionâ€¦`, 'success');
             setTimeout(() => redirectToUserSpace(userType), 2500);
 
         } catch (err) {
             console.error('Erreur inscription :', err?.message || err, err?.stack || '');
-            showNotification(`Erreur lors du traitement des fichiers. ${err?.message || 'Réessayez.'}`, 'error');
+            showNotification(`Erreur lors du traitement des fichiers. ${err?.message || 'RÃ©essayez.'}`, 'error');
             if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = "S'inscrire"; }
         }
     });
@@ -435,7 +436,7 @@ function setMaxDateForBirthFields() {
         dn.dataset.maxDate = adultMax;
         dn.dataset.minDate = adultMin;
         const info = document.getElementById('dateNaissanceInfo');
-        if (info) info.innerHTML = `<i class="fas fa-info-circle"></i> Âge requis : 18 à 100 ans (${y-100}–${y-18})`;
+        if (info) info.innerHTML = `<i class="fas fa-info-circle"></i> Âge minimum requis : 18 ans`;
     }
     document.querySelectorAll('[id^="dateNaissanceEnfant"]').forEach(f => {
         f.dataset.maxDate = childMax;
@@ -447,7 +448,7 @@ function setMaxDateForBirthFields() {
             msg.style.cssText = 'display:block;color:#6c757d;font-size:.85rem;margin-top:5px;';
             f.closest('.form-group')?.appendChild(msg);
         }
-        msg.innerHTML = `<i class="fas fa-info-circle"></i> Âge requis : 3 à 18 ans (${y-18}–${y-3})`;
+        msg.innerHTML = `<i class="fas fa-info-circle"></i> Ã‚ge requis : 3 Ã  18 ans (${y-18}â€“${y-3})`;
     });
 }
 
@@ -461,7 +462,7 @@ function validateBirthDate(dateString, isChild = false) {
         let age = today.getFullYear() - birth.getFullYear();
         if (today.getMonth() < birth.getMonth() ||
            (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age--;
-        return isChild ? (age >= 3 && age <= 18) : (age >= 18 && age <= 100);
+        return isChild ? (age >= 3 && age <= 18) : (age >= 18);
     } catch { return false; }
 }
 
@@ -484,26 +485,29 @@ function validateField(field) {
     if (!val && !field.required) return true;
 
     if (field.type === 'email' && !validateEmail(val))   { showFieldError(field, 'Email invalide'); return false; }
-    if (field.type === 'tel'   && !validatePhone(val))   { showFieldError(field, 'Numéro invalide (ex: 0550123456)'); return false; }
+    if (field.type === 'tel'   && !validatePhone(val))   { showFieldError(field, 'NumÃ©ro invalide (ex: 0550123456)'); return false; }
     const isDateField = field.dataset.dateFormat === 'dd/mm/yyyy';
     if (isDateField) {
         if (!validateDate(val)) { showFieldError(field, 'Date invalide'); return false; }
         if (field.name?.includes('dateNaissance')) {
             const isChild = field.name.includes('Enfant');
             if (!validateBirthDate(val, isChild)) {
-                showFieldError(field, isChild ? 'L\'enfant doit avoir entre 3 et 18 ans' : 'Âge requis : 18 à 100 ans');
+                showFieldError(field, isChild ? 'L\'enfant doit avoir entre 3 et 18 ans' : 'Vous devez avoir au moins 18 ans');
                 return false;
             }
         }
     }
-    if (field.type === 'password' && val.length < 8)     { showFieldError(field, 'Minimum 8 caractères'); return false; }
+    if (field.type === 'password' && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(val))     { showFieldError(field, 'Au moins 8 caractères, une majuscule, une minuscule et un chiffre.'); return false; }
     if (field.id === 'confirmPassword') {
         if (val !== (document.getElementById('password')?.value || '')) {
             showFieldError(field, 'Les mots de passe ne correspondent pas'); return false;
         }
     }
-    if ((field.name === 'codeOptionAdmin' || field.name === 'codeOptionCoach') && !validateCodeOption(val)) {
-        showFieldError(field, 'Format: 3 lettres majuscules + 3 chiffres'); return false;
+    if ((field.name === 'codeOptionAdmin' || field.name === 'codeOptionCoach') && !validateCodeOption(field.name, val)) {
+        showFieldError(field, field.name === 'codeOptionAdmin'
+            ? 'Code d’accès administrateur invalide pour le rôle sélectionné.'
+            : 'Code d’option invalide.');
+        return false;
     }
     if (field.name === 'ccpCoach' && !validateCCP(val)) {
         showFieldError(field, 'Format CCP invalide (000-000-000-000)'); return false;
@@ -549,7 +553,7 @@ function clearFieldError(field) {
 }
 
 /* =========================================================
-   RÔLE / CHAMPS SPÉCIFIQUES
+   RÃ”LE / CHAMPS SPÃ‰CIFIQUES
    ========================================================= */
 
 function showRoleFields(role) {
@@ -564,6 +568,33 @@ function showRoleFields(role) {
         sp.querySelectorAll('[required]').forEach(i => i.required = true);
         if (role === 'parent') setTimeout(setMaxDateForBirthFields, 100);
     }
+}
+
+function getSportsList() {
+    const storedSports = JSON.parse(localStorage.getItem('sportsData') || '[]');
+    const sports = Array.isArray(storedSports) && storedSports.length
+        ? storedSports.map((sport) => String(sport.name || '').trim()).filter(Boolean)
+        : ['Football', 'Basketball', 'Volleyball', 'Handball', 'Natation', 'Athlétisme', 'Judo', 'Karaté', 'Tennis', 'Gymnastique'];
+
+    return [...new Set(sports)];
+}
+
+function renderSportsOptions(selectedValue = '') {
+    return getSportsList().map((sport) => {
+        const selected = sport === selectedValue ? ' selected' : '';
+        return `<option value="${sport}"${selected}>${sport}</option>`;
+    }).join('');
+}
+
+function populateSportsFields() {
+    const targets = ['sportCoach', 'sportAthlete'];
+    targets.forEach((id) => {
+        const select = document.getElementById(id);
+        if (!select) return;
+        const currentValue = select.value;
+        select.innerHTML = `<option value="">Sélectionnez un sport</option>${renderSportsOptions(currentValue)}`;
+        if (currentValue) select.value = currentValue;
+    });
 }
 
 function setupMaladieToggle(cbId, inputId) {
@@ -611,7 +642,7 @@ function ajouterEnfant() {
                     <input type="text" name="nomEnfant[]" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Prénom *</label>
+                    <label class="form-label">PrÃ©nom *</label>
                     <input type="text" name="prenomEnfant[]" class="form-control" required>
                 </div>
             </div>
@@ -621,13 +652,13 @@ function ajouterEnfant() {
                     <input type="text" id="dateNaissanceEnfant${n}" name="dateNaissanceEnfant[]"
                            class="form-control" placeholder="dd/mm/yyyy" inputmode="numeric" maxlength="10"
                            data-date-format="dd/mm/yyyy" required data-max-date="${y-3}-${m}-${d}" data-min-date="${y-18}-${m}-${d}">
-                    <small class="date-info-child"><i class="fas fa-info-circle"></i> Âge requis : 3 à 18 ans (${y-18}–${y-3})</small>
+                    <small class="date-info-child"><i class="fas fa-info-circle"></i> Ã‚ge requis : 3 Ã  18 ans (${y-18}â€“${y-3})</small>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Sexe *</label>
                     <select name="sexeEnfant[]" class="form-select" required>
-                        <option value="">Sélectionnez</option>
-                        <option value="M">Garçon</option>
+                        <option value="">SÃ©lectionnez</option>
+                        <option value="M">GarÃ§on</option>
                         <option value="F">Fille</option>
                     </select>
                 </div>
@@ -635,19 +666,12 @@ function ajouterEnfant() {
             <div class="form-group">
                 <label class="form-label">Sport *</label>
                 <select name="sportEnfant[]" class="form-select" required>
-                    <option value="">Sélectionnez un sport</option>
-                    <option value="football">Football</option>
-                    <option value="basketball">Basketball</option>
-                    <option value="handball">Handball</option>
-                    <option value="natation">Natation</option>
-                    <option value="athletisme">Athlétisme</option>
-                    <option value="judo">Judo</option>
-                    <option value="karate">Karaté</option>
-                    <option value="gymnastique">Gymnastique</option>
+                    <option value="">SÃ©lectionnez un sport</option>
+                    ${renderSportsOptions()}
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">Certificat médical *</label>
+                <label class="form-label">Certificat mÃ©dical *</label>
                 <input type="file" id="certificatMedicalEnfant${n}" name="certificatMedicalEnfant[]"
                        class="form-control" accept=".pdf,.jpg,.png" required>
             </div>
@@ -672,7 +696,7 @@ function ajouterEnfant() {
                 </div>
             </div>
             <div class="form-group">
-                <label class="form-label">Permission parentale signée *</label>
+                <label class="form-label">Permission parentale signÃ©e *</label>
                 <input type="file" id="permissionParentale${n}" name="permissionParentale[]"
                        class="form-control" accept=".pdf,.jpg,.png" required>
             </div>
@@ -685,7 +709,7 @@ function ajouterEnfant() {
 }
 
 /* =========================================================
-   PRÉVISUALISATION NOM DE FICHIER
+   PRÃ‰VISUALISATION NOM DE FICHIER
    ========================================================= */
 
 function addFileNamePreviews(container = document) {
@@ -761,7 +785,22 @@ function initModals() {
 function validateEmail(email)  { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
 function validatePhone(phone)  { return /^(\+213|0)[5-7][0-9]{8}$/.test(phone.replace(/[\s\-()]/g,'')); }
 function validateDate(date)    { return !!window.ManarDate?.parse(date); }
-function validateCodeOption(c) { return /^[A-Z]{3}\d{3}$/.test(c); }
+function validateCodeOption(fieldName, code) {
+    const trimmedCode = String(code || '').trim();
+    if (fieldName === 'codeOptionCoach') {
+        return /^[A-Z]{3}\d{3}$/.test(trimmedCode);
+    }
+
+    const selectedRole = document.getElementById('adminFunction')?.value || '';
+    const adminCodes = {
+        principal: 'P#gA.2',
+        'statistiques-finance': '56S@m',
+        evenements: 'V*192.m',
+        utilisateurs: 'U.s3er#'
+    };
+
+    return !!selectedRole && adminCodes[selectedRole] === trimmedCode;
+}
 function validateCCP(ccp)      { return /^\d{3}-\d{3}-\d{3}-\d{3}$/.test(ccp); }
 
 function formatDateForInput(value) {
@@ -777,7 +816,7 @@ function normalizeStorageDate(value) {
    ========================================================= */
 
 function getRoleLabel(role) {
-    return { admin:'Administrateur', coach:'Coach Sportif', athlete:'Athlète', parent:'Parent' }[role] || 'Membre';
+    return { admin:'Administrateur', coach:'Coach Sportif', athlete:'AthlÃ¨te', parent:'Parent' }[role] || 'Membre';
 }
 
 function redirectToUserSpace(role) {
@@ -816,3 +855,4 @@ window.ajouterEnfant       = ajouterEnfant;
 window.validateBirthDate   = validateBirthDate;
 window.redirectToUserSpace = redirectToUserSpace;
 window.getRoleLabel        = getRoleLabel;
+

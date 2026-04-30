@@ -399,7 +399,6 @@
                         <li><a href="historique.html"><i class="fas fa-history"></i> Historique</a></li>
                         <li><a href="equipes.html"><i class="fas fa-users"></i> Équipes</a></li>
                         <li><a href="planning.html"><i class="fas fa-calendar-alt"></i> Planning</a></li>
-                        <li><a href="tarifs.html"><i class="fas fa-tags"></i> Tarifs</a></li>
                         <li><a href="actualites.html"><i class="fas fa-newspaper"></i> Actualités</a></li>
                         <li><a href="galerie.html"><i class="fas fa-images"></i> Galerie</a></li>
                         <li><a href="inscription.html" class="btn-register"><i class="fas fa-user-plus"></i> Inscription</a></li>
@@ -429,6 +428,7 @@
                         </label>
                         <input type="email" id="email" name="email" class="form-control" 
                                placeholder="votre@email.com" required autocomplete="email">
+                        <small class="form-hint">Format attendu : nom@gmail.com</small>
                     </div>
                     
                     <div class="form-group">
@@ -444,7 +444,7 @@
                             </button>
                         </div>
                         <a href="#" class="forgot-password" id="forgotPasswordLink">
-                            <i class="fas fa-question-circle"></i> Mot de passe oublià à
+                            <i class="fas fa-question-circle"></i> Mot de passe oublié
                         </a>
                     </div>
                     
@@ -456,6 +456,7 @@
                     <button type="submit" class="btn btn-primary btn-block" id="loginButton">
                         <i class="fas fa-sign-in-alt"></i> Se connecter
                     </button>
+                    <div id="loginErrorMessage" class="form-error-message" style="display: none; color: #dc3545; margin-top: 12px; text-align: center; font-weight: 600;"></div>
                     
                     <div class="divider">
                         <span>Ou connectez-vous avec</span>
@@ -474,7 +475,7 @@
                 <!-- Formulaire de r&eacute;initialisation -->
                 <form id="forgotPasswordForm" class="auth-form" style="display: none;">
                     <h3 style="text-align: center; margin-bottom: 20px; color: #333;">
-                        <i class="fas fa-key"></i> R?initialisation
+                        <i class="fas fa-key"></i> Réinitialisation
                     </h3>
                     <p style="text-align: center; margin-bottom: 20px; color: #6c757d;">
                         Entrez votre adresse email pour recevoir un lien de r&eacute;initialisation.
@@ -575,7 +576,6 @@
                         <li><a href="historique.html">Historique</a></li>
                         <li><a href="equipes.html">Équipes</a></li>
                         <li><a href="planning.html">Planning</a></li>
-                        <li><a href="tarifs.html">Tarifs</a></li>
                     </ul>
                 </div>
                 
@@ -615,7 +615,7 @@
                 <p>En utilisant ce site, vous acceptez les pr&eacute;sentes conditions d'utilisation.</p>
                 
                 <h4>2. Inscription et compte</h4>
-                <p>Les utilisateurs doivent fournir des informations exactes et maintenir la confidentialità de leur compte.</p>
+                    <p>Les utilisateurs doivent fournir des informations exactes et maintenir la confidentialité de leur compte.</p>
                 
                 <h4>3. Responsabilit?s</h4>
                 <p>L'association d&eacute;cline toute responsabilità pour les blessures survenues pendant les activités sportives.</p>
@@ -671,7 +671,7 @@
                 <ul>
                     <li>Cookies essentiels (connexion, s&eacute;curit&eacute;)</li>
                     <li>Cookies de performance (analyse d'usage)</li>
-                    <li>Cookies de fonctionnalità (pr?f?rences)</li>
+                    <li>Cookies de fonctionnalité (préférences)</li>
                 </ul>
                 
                 <h4>Gestion des cookies</h4>

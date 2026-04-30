@@ -1,0 +1,90 @@
+from pathlib import Path
+
+replacements = {
+    'D?connexion': 'Déconnexion',
+    'Espace Athl?te': 'Espace Athlète',
+    'Athl?te': 'Athlète',
+    'Athl?f?te': 'Athlète',
+    'S?ances ? venir': 'Séances à venir',
+    'S?ances': 'Séances',
+    'S?f?ances': 'Séances',
+    'G?f?rez': 'Gérez',
+    'Taux de pr?f?sence': 'Taux de présence',
+    'Charg?f? dynamiquement': 'Chargé dynamiquement',
+    'Cr?f?er S?f?ance': 'Créer Séance',
+    'entra?f?neur': 'entraîneur',
+    'athl?f?tes ?f? se d?f?passer': 'athlètes à se dépasser',
+    'àv?nement': 'événement',
+    '?&eacute;v&eacute;nement': 'Événement',
+    'Ajouter un àv?nement': 'Ajouter un événement',
+    'Détails àv?nement': 'Détails événement',
+    'Actualità': 'Actualités',
+    '?à la une': 'À la une',
+    'Cet àv?nement': 'Cet événement',
+    'Notre àquipe': 'Notre équipe',
+    'Rechercher une àquipe...': 'Rechercher une équipe...',
+    'Rejoindre une à&eacute;quipe': 'Rejoindre une équipe',
+    'Intéressé pour intégrer l\'une de nos Équipes à': 'Intéressé pour intégrer l\'une de nos équipes ?',
+    'Nos coachs àvaluent': 'Nos coachs évaluent',
+    'àtudiants': 'étudiants',
+    'illimità': 'illimité',
+    'activitéf?s': 'activités',
+    'Th?fà d?f?tox offert': 'Thé détox offert',
+    'àf???v?f?nements': 'événements',
+    'àf?v?f?nements': 'événements',
+    'esp?f?ces': 'espèces',
+    'àfà': 'à',
+    'Pr?f?t àfà rejoindre notre communautéfà à': 'Prêt à rejoindre notre communauté ?',
+    'd?f?j?fà': 'déjà',
+    'Fr?f?quentes': 'Fréquentes',
+    'Ferm?fà jours f?f?ri?f?s': 'Fermé jours fériés',
+    'Tous droits r?f?serv?f?s.': 'Tous droits réservés.',
+    'fa?onnà': 'façonné',
+    'cr?à': 'créa',
+    'àcole': 'école',
+    'fr?quentent': 'fréquentent',
+    'qualità': 'qualité',
+    'àcrivez': 'écrivez',
+    'Tél?phone': 'Téléphone',
+    'D?jà membre à': 'Déjà membre à',
+    'confidentialità': 'confidentialité',
+    'responsabilità': 'responsabilité',
+    'propri?tà': 'propriété',
+    's?curità': 'sécurité',
+    'pr?f?rences': 'préférences',
+    'param?tres': 'paramètres',
+    'r?initialisation': 'réinitialisation',
+    'à"uvre': 'œuvre',
+    'Qu\'est-ce qu\'un cookie à': 'Qu\'est-ce qu\'un cookie ?',
+    'stockà': 'stocké',
+    'chargà': 'chargé',
+    'non defini': 'non défini',
+    'Voir tout ??????T': 'Voir tout le planning',
+    'r?f?serv?f?e': 'réservée',
+    'Lieu ?f? d?f?finir': 'Lieu à définir',
+    'Confirm?f?e': 'Confirmée',
+    "Participer ?f? 15 s&eacute;ances": 'Participer à 15 séances',
+    'Aucune s&eacute;ance r?f?serv?f?e pour le moment.': 'Aucune séance réservée pour le moment.',
+    'Paiment en esp?f?ces àfà l\'accueil': 'Paiement en espèces à l\'accueil',
+    '2 photos d\'identit?fà n?f?cessaires': '2 photos d\'identité nécessaires',
+    'Pr?f?t àfà rejoindre notre communautéfà à': 'Prêt à rejoindre notre communauté ?',
+    'Plus de 1,500 membres nous font d?f?j?fà confiance': 'Plus de 1 500 membres nous font déjà confiance',
+    'Questions Fr?f?quentes': 'Questions Fréquentes',
+    'Oui, vous pouvez suspendre votre abonnement jusqu\'?fà 3 mois par an pour vacances ou blessure, sur justificatif.': 'Oui, vous pouvez suspendre votre abonnement jusqu\'à 3 mois par an pour vacances ou blessure, sur justificatif.',
+    'À jour': 'À jour',
+    'Sport non defini': 'Sport non défini',
+    'Voir tout ??????T': 'Voir tout le planning',
+}
+
+files = list(Path('pages').glob('*.html'))
+updated = 0
+for path in files:
+    text = path.read_text(encoding='utf-8', errors='replace')
+    original = text
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+    if text != original:
+        path.write_text(text, encoding='utf-8')
+        updated += 1
+        print(f'Updated {path}')
+print(f'Done: {updated} files updated')

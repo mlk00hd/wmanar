@@ -1250,6 +1250,9 @@
                 <i class="fas fa-users"></i><span>Utilisateurs</span>
                 <span class="nav-badge" id="pendingBadge">0</span>
             </a>
+            <a class="nav-item" data-section="athletesAdmin" data-tooltip="Gestion Athletes">
+                <i class="fas fa-id-badge"></i><span>Gestion athlètes</span>
+            </a>
             <a class="nav-item" data-section="equipes" data-tooltip="?quipes">
                 <i class="fas fa-users-cog"></i><span>?quipes</span>
             </a>
@@ -1510,6 +1513,47 @@
                 </div>
             </section>
 
+            <section id="athletesAdmin" class="section">
+                <div class="section-top">
+                    <h2><i class="fas fa-id-badge"></i> Gestion athlètes</h2>
+                    <div style="display:flex;gap:10px">
+                        <button class="btn btn-primary" onclick="app.exportAthleteList('all')">
+                            <i class="fas fa-download"></i> Exporter tout
+                        </button>
+                        <button class="btn btn-secondary" onclick="app.exportAthleteList('insured')">
+                            <i class="fas fa-shield-alt"></i> Exporter assurés
+                        </button>
+                        <button class="btn btn-secondary" onclick="app.exportAthleteList('competitive')">
+                            <i class="fas fa-trophy"></i> Exporter compétitifs
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Athlète</th>
+                                <th>Sport</th>
+                                <th>Assuré</th>
+                                <th>Compétitif</th>
+                                <th>Sept.</th>
+                                <th>Oct.</th>
+                                <th>Nov.</th>
+                                <th>Déc.</th>
+                                <th>Janv.</th>
+                                <th>Févr.</th>
+                                <th>Mars</th>
+                                <th>Avr.</th>
+                                <th>Mai</th>
+                                <th>Juin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="athleteAdminBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
             <!-- ===== ??QUIPES ===== -->
             <section id="equipes" class="section">
                 <div class="section-top">
@@ -1657,9 +1701,9 @@
             <!-- ===== GALERIE ===== -->
             <section id="galerie" class="section">
                 <div class="section-top">
-                    <h2><i class="fas fa-images"></i> Galerie Photos</h2>
+                    <h2><i class="fas fa-images"></i> Galerie</h2>
                     <button class="btn btn-success" onclick="app.showAddImageModal()">
-                        <i class="fas fa-upload"></i> Ajouter une image
+                        <i class="fas fa-upload"></i> D&eacute;poser
                     </button>
                 </div>
                 <div class="gallery-grid" id="galleryGrid"></div>
@@ -2113,11 +2157,13 @@ class AdminApp {
         this.materials = [];
         this.invoices = [];
         this.results = [];
+        this.athleteTracking = {};
         this.pendingInvoiceAttachment = null;
         this.currentPage = 1;
         this.itemsPerPage = 10;
         this.currentCalDate = new Date();
         this.charts = {};
+        this.adminConfig = null;
         this.init();
     }
 
@@ -2125,15 +2171,18 @@ class AdminApp {
     async init() {
         this.checkAuth();
         await this.loadData();
+        this.syncAthleteTracking();
         this.initCharts();
         this.renderAll();
         this.bindEvents();
+        this.applyAdminPermissions();
         this.resetMaterialForm();
         this.resetInvoiceForm();
         this.resetResultForm();
         this.renderCalendar();
         const hash = window.location.hash.slice(1);
-        if (hash) this.showSection(hash);
+        if (hash && this.canViewSection(hash)) this.showSection(hash);
+        else this.showSection(this.getAllowedInitialSection());
     }
 
     /* ===== AUTH ===== */
@@ -2146,9 +2195,10 @@ class AdminApp {
         this.currentUser = user;
         const name = user.prenom || user.nom || 'Admin';
         document.getElementById('adminName').textContent = name;
-        document.getElementById('adminRole').textContent = user.adminFunction || 'Administrateur';
+        document.getElementById('adminRole').textContent = this.getAdminRoleLabel(user.adminFunction);
         document.getElementById('topbarName').textContent = name;
         document.getElementById('topbarInitials').textContent = name.charAt(0).toUpperCase();
+        this.adminConfig = this.getAdminConfig(user.adminFunction);
     }
 
     /* ===== DATA ===== */
@@ -2182,6 +2232,9 @@ class AdminApp {
             const storedResults = localStorage.getItem('adminResults');
             this.results = storedResults ? JSON.parse(storedResults) : this.seedResults();
 
+            const storedAthleteTracking = localStorage.getItem('adminAthleteTracking');
+            this.athleteTracking = storedAthleteTracking ? JSON.parse(storedAthleteTracking) : {};
+
             // Sauvegarder SEULEMENT les donn?es qui n'existaient pas encore
             if (!storedEvents) localStorage.setItem('events', JSON.stringify(this.events));
             if (!storedTeams) localStorage.setItem('teams', JSON.stringify(this.teams));
@@ -2191,6 +2244,7 @@ class AdminApp {
             if (!storedMaterials) localStorage.setItem('adminMaterials', JSON.stringify(this.materials));
             if (!storedInvoices) localStorage.setItem('adminInvoices', JSON.stringify(this.invoices));
             if (!storedResults) localStorage.setItem('adminResults', JSON.stringify(this.results));
+            if (!storedAthleteTracking) localStorage.setItem('adminAthleteTracking', JSON.stringify(this.athleteTracking));
             // NE PAS r??crire users ici pour pr?server ceux de l'inscription
 
         } catch(e) {
@@ -2209,6 +2263,7 @@ class AdminApp {
         localStorage.setItem('adminMaterials', JSON.stringify(this.materials));
         localStorage.setItem('adminInvoices', JSON.stringify(this.invoices));
         localStorage.setItem('adminResults', JSON.stringify(this.results));
+        localStorage.setItem('adminAthleteTracking', JSON.stringify(this.athleteTracking));
     }
 
     /* ===== SEED DATA ===== */
@@ -2333,6 +2388,233 @@ class AdminApp {
         ];
     }
 
+    getAdminConfig(adminFunction) {
+        const key = adminFunction || 'principal';
+        const configs = {
+            principal: {
+                editable: ['dashboard', 'utilisateurs', 'athletesAdmin', 'equipes', 'planning', 'evenements', 'materiel', 'galerie', 'messages', 'factures', 'finances', 'statistiques', 'resultats', 'parametres'],
+                readonly: []
+            },
+            'statistiques-finance': {
+                editable: ['dashboard', 'finances', 'statistiques', 'factures', 'materiel'],
+                readonly: ['equipes', 'utilisateurs', 'resultats']
+            },
+            evenements: {
+                editable: ['dashboard', 'evenements', 'planning', 'galerie', 'resultats'],
+                readonly: ['utilisateurs', 'equipes']
+            },
+            utilisateurs: {
+                editable: ['dashboard', 'utilisateurs', 'messages', 'equipes', 'athletesAdmin'],
+                readonly: []
+            }
+        };
+        return configs[key] || configs.principal;
+    }
+
+    canEditSection(name) {
+        return !!this.adminConfig?.editable?.includes(name);
+    }
+
+    canViewSection(name) {
+        return this.canEditSection(name) || !!this.adminConfig?.readonly?.includes(name);
+    }
+
+    isReadOnlySection(name) {
+        return !this.canEditSection(name) && !!this.adminConfig?.readonly?.includes(name);
+    }
+
+    applyAdminPermissions() {
+        const availableSections = [];
+        document.querySelectorAll('.nav-item[data-section]').forEach(link => {
+            const section = link.dataset.section;
+            const visible = this.canViewSection(section);
+            link.style.display = visible ? '' : 'none';
+            if (visible) availableSections.push(section);
+        });
+
+        document.querySelectorAll('.section').forEach(section => {
+            const visible = this.canViewSection(section.id);
+            section.style.display = visible ? '' : 'none';
+        });
+
+        if (!this.canViewSection('dashboard')) {
+            document.getElementById('dashboard')?.style.setProperty('display', 'none');
+        }
+
+        const current = window.location.hash.slice(1);
+        if (!this.canViewSection(current || 'dashboard')) {
+            this.showSection(availableSections[0] || 'dashboard');
+        }
+    }
+
+    applySectionMode(name) {
+        const section = document.getElementById(name);
+        if (!section) return;
+
+        const readOnly = this.isReadOnlySection(name);
+        section.dataset.readonly = readOnly ? 'true' : 'false';
+
+        section.querySelectorAll('input, select, textarea, button').forEach(control => {
+            if (control.classList.contains('modal-close')) return;
+            if (control.closest('#paginationContainer')) return;
+            if (readOnly) {
+                control.disabled = true;
+            } else {
+                control.disabled = false;
+            }
+        });
+
+        if (readOnly && !section.querySelector('.readonly-banner')) {
+            const banner = document.createElement('div');
+            banner.className = 'readonly-banner';
+            banner.style.cssText = 'margin-bottom:16px;padding:12px 16px;border-radius:12px;background:#fff3cd;color:#856404;font-weight:600;';
+            banner.textContent = 'Mode lecture seule pour cet administrateur.';
+            section.prepend(banner);
+        }
+
+        const banner = section.querySelector('.readonly-banner');
+        if (banner) banner.style.display = readOnly ? 'block' : 'none';
+    }
+
+    getAllowedInitialSection() {
+        if (this.canViewSection('dashboard')) return 'dashboard';
+        return this.adminConfig?.editable?.[0] || this.adminConfig?.readonly?.[0] || 'dashboard';
+    }
+
+    getAthleteMonths() {
+        return [
+            { key: 'septembre', label: 'Septembre' },
+            { key: 'octobre', label: 'Octobre' },
+            { key: 'novembre', label: 'Novembre' },
+            { key: 'decembre', label: 'Décembre' },
+            { key: 'janvier', label: 'Janvier' },
+            { key: 'fevrier', label: 'Février' },
+            { key: 'mars', label: 'Mars' },
+            { key: 'avril', label: 'Avril' },
+            { key: 'mai', label: 'Mai' },
+            { key: 'juin', label: 'Juin' }
+        ];
+    }
+
+    syncAthleteTracking() {
+        const athletes = this.users.filter(u => (u.role || u.userType) === 'athlete' && u.status === 'active');
+        athletes.forEach(athlete => {
+            if (!this.athleteTracking[athlete.id]) {
+                this.athleteTracking[athlete.id] = {
+                    assured: false,
+                    competitive: false,
+                    months: {}
+                };
+            }
+            this.getAthleteMonths().forEach(month => {
+                if (typeof this.athleteTracking[athlete.id].months[month.key] !== 'boolean') {
+                    this.athleteTracking[athlete.id].months[month.key] = false;
+                }
+            });
+        });
+
+        Object.keys(this.athleteTracking).forEach(id => {
+            if (!athletes.some(athlete => String(athlete.id) === String(id))) delete this.athleteTracking[id];
+        });
+    }
+
+    renderAthleteManagement() {
+        const tbody = document.getElementById('athleteAdminBody');
+        if (!tbody) return;
+        this.syncAthleteTracking();
+        const athletes = this.users.filter(u => (u.role || u.userType) === 'athlete' && u.status === 'active');
+
+        if (!athletes.length) {
+            tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;color:var(--gray-500);padding:24px">Aucun athlète validé.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = athletes.map(athlete => {
+            const tracking = this.athleteTracking[athlete.id];
+            return `
+                <tr>
+                    <td>${this.escapeHtml(`${athlete.prenom || ''} ${athlete.nom || ''}`.trim())}</td>
+                    <td>${this.escapeHtml(athlete.sport || '-')}</td>
+                    <td><input type="checkbox" ${tracking.assured ? 'checked' : ''} onchange="app.toggleAthleteFlag(${athlete.id}, 'assured', this.checked)"></td>
+                    <td><input type="checkbox" ${tracking.competitive ? 'checked' : ''} onchange="app.toggleAthleteFlag(${athlete.id}, 'competitive', this.checked)"></td>
+                    ${this.getAthleteMonths().map(month => `<td><input type="checkbox" ${tracking.months[month.key] ? 'checked' : ''} onchange="app.toggleAthleteMonth(${athlete.id}, '${month.key}', '${month.label}', this.checked)"></td>`).join('')}
+                </tr>
+            `;
+        }).join('');
+    }
+
+    toggleAthleteFlag(athleteId, field, checked) {
+        if (!this.canEditSection('athletesAdmin')) return;
+        this.syncAthleteTracking();
+        this.athleteTracking[athleteId][field] = checked;
+        localStorage.setItem('adminAthleteTracking', JSON.stringify(this.athleteTracking));
+        this.renderAthleteManagement();
+    }
+
+    toggleAthleteMonth(athleteId, monthKey, monthLabel, checked) {
+        if (!this.canEditSection('athletesAdmin')) return;
+        this.syncAthleteTracking();
+        this.athleteTracking[athleteId].months[monthKey] = checked;
+
+        const athlete = this.users.find(u => Number(u.id) === Number(athleteId));
+        if (athlete) {
+            const transactionType = `Cotisation ${monthLabel}`;
+            const existingIndex = this.transactions.findIndex(t => t.athleteId === athleteId && t.type === transactionType);
+            if (checked && existingIndex === -1) {
+                this.transactions.unshift({
+                    id: this.nextId(this.transactions),
+                    athleteId,
+                    date: this.todayFormatted(),
+                    member: `${athlete.prenom || ''} ${athlete.nom || ''}`.trim(),
+                    type: transactionType,
+                    amount: 0,
+                    status: 'payé'
+                });
+            }
+            if (!checked && existingIndex !== -1) {
+                this.transactions.splice(existingIndex, 1);
+            }
+        }
+
+        localStorage.setItem('transactions', JSON.stringify(this.transactions));
+        localStorage.setItem('adminAthleteTracking', JSON.stringify(this.athleteTracking));
+        this.renderAthleteManagement();
+        this.renderTransactions();
+        this.updateStats();
+    }
+
+    exportAthleteList(mode) {
+        const athletes = this.users.filter(u => (u.role || u.userType) === 'athlete' && u.status === 'active');
+        this.syncAthleteTracking();
+
+        const filtered = athletes.filter(athlete => {
+            const tracking = this.athleteTracking[athlete.id] || { assured: false, competitive: false };
+            if (mode === 'insured') return tracking.assured;
+            if (mode === 'competitive') return tracking.competitive;
+            return true;
+        });
+
+        const rows = [
+            ['Nom', 'Sport', 'Assuré', 'Compétitif'].join(';'),
+            ...filtered.map(athlete => {
+                const tracking = this.athleteTracking[athlete.id];
+                return [
+                    `${athlete.prenom || ''} ${athlete.nom || ''}`.trim(),
+                    athlete.sport || '',
+                    tracking?.assured ? 'Oui' : 'Non',
+                    tracking?.competitive ? 'Oui' : 'Non'
+                ].join(';');
+            })
+        ];
+
+        const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `athletes-${mode}.csv`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+    }
+
     /* ===== STATS ===== */
     updateStats() {
         const nonAdmin = this.users.filter(u => (u.role || u.userType) !== 'admin');
@@ -2435,6 +2717,7 @@ class AdminApp {
         this.updateStats();
         this.renderRecentUsers();
         this.renderUsersTable();
+        this.renderAthleteManagement();
         this.renderEventsList();
         this.renderTeamsGrid();
         this.renderGalleryGrid();
@@ -3216,6 +3499,56 @@ class AdminApp {
         return (bytes/1024/1024).toFixed(1) + ' Mo';
     }
 
+    getAdminAccessCodes() {
+        return {
+            principal: 'P#gA.2',
+            'statistiques-finance': '56S@m',
+            evenements: 'V*192.m',
+            utilisateurs: 'U.s3er#'
+        };
+    }
+
+    getAdminRoleLabel(adminFunction) {
+        const labels = {
+            principal: 'Admin principal',
+            'statistiques-finance': 'Admin statistiques et finance',
+            evenements: 'Admin événements',
+            utilisateurs: 'Admin utilisateur'
+        };
+        return labels[adminFunction] || 'Administrateur';
+    }
+
+    buildAdminFunctionOptions(selectedValue = '') {
+        return [
+            { value: 'principal', label: 'Admin principal' },
+            { value: 'statistiques-finance', label: 'Admin statistiques et finance' },
+            { value: 'evenements', label: 'Admin événements' },
+            { value: 'utilisateurs', label: 'Admin utilisateur' }
+        ].map(option => `<option value="${option.value}" ${selectedValue === option.value ? 'selected' : ''}>${option.label}</option>`).join('');
+    }
+
+    validateAdminCredentialsForRole(adminFunction, code) {
+        const expectedCode = this.getAdminAccessCodes()[adminFunction];
+        return !!expectedCode && code === expectedCode;
+    }
+
+    toggleAdminUserFields(mode = 'add') {
+        const roleField = document.getElementById(mode === 'edit' ? 'euRole' : 'uRole');
+        const adminFields = document.getElementById(mode === 'edit' ? 'editAdminFields' : 'addAdminFields');
+        const functionField = document.getElementById(mode === 'edit' ? 'euAdminFunction' : 'uAdminFunction');
+        const codeField = document.getElementById(mode === 'edit' ? 'euAdminCode' : 'uAdminCode');
+        const isAdmin = roleField?.value === 'admin';
+
+        if (adminFields) adminFields.style.display = isAdmin ? '' : 'none';
+        if (functionField) functionField.required = !!isAdmin;
+        if (codeField) codeField.required = !!isAdmin;
+
+        if (!isAdmin) {
+            if (functionField) functionField.value = '';
+            if (codeField) codeField.value = '';
+        }
+    }
+
     /* ===== ADD USER MODAL ===== */
     showAddUserModal() {
         this._pendingAddUserDocs = {};
@@ -3227,7 +3560,7 @@ class AdminApp {
                 <div class="form-group"><label class="form-label">Mot de passe <span class="req">*</span></label><input type="password" class="form-control" id="uPwd" placeholder="Minimum 6 caract?res"></div>
                 <div class="form-group"><label class="form-label">T?l?phone</label><input type="tel" class="form-control" id="uPhone" placeholder="055X XXX XXX"></div>
                 <div class="form-group"><label class="form-label">R?le <span class="req">*</span></label>
-                    <select class="form-select" id="uRole">
+                    <select class="form-select" id="uRole" onchange="app.toggleAdminUserFields('add')">
                         <option value="athlete">Athl?te</option>
                         <option value="coach">Coach</option>
                         <option value="parent">Parent</option>
@@ -3240,6 +3573,21 @@ class AdminApp {
                 <div class="form-group"><label class="form-label">Date de naissance</label><input type="text" class="form-control" id="uBirth" placeholder="dd/mm/yyyy" inputmode="numeric"></div>
                 <div class="form-group full"><label class="form-label">Adresse</label><input type="text" class="form-control" id="uAddress" placeholder="Ville, quartier"></div>
             </div>
+            <div id="addAdminFields" style="display:none;margin-top:16px;padding:12px;border-radius:12px;background:var(--gray-50)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Fonction administrateur <span class="req">*</span></label>
+                        <select class="form-select" id="uAdminFunction">
+                            <option value="">S?lectionnez une fonction</option>
+                            ${this.buildAdminFunctionOptions()}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Code d'acc?s <span class="req">*</span></label>
+                        <input type="text" class="form-control" id="uAdminCode" placeholder="Code d'acc?s exact">
+                    </div>
+                </div>
+            </div>
             <div style="margin-top:18px;padding:12px;border-radius:12px;background:var(--gray-50)">
                 <h4 style="font-size:1rem;margin-bottom:10px;color:var(--gray-700)"><i class="fas fa-folder-open" style="color:var(--primary-light)"></i> Documents essentiels</h4>
                 <div class="form-grid">
@@ -3251,6 +3599,7 @@ class AdminApp {
             `<button class="btn btn-secondary" onclick="app.closeModal()">Annuler</button>
              <button class="btn btn-success" onclick="app.submitAddUser()"><i class="fas fa-save"></i> Cr?er l'utilisateur</button>`
         );
+        this.toggleAdminUserFields('add');
     }
 
     handleAddUserDocFile(input, label) {
@@ -3284,10 +3633,16 @@ class AdminApp {
         const sexe = document.getElementById('uSexe')?.value;
         const birthInput = document.getElementById('uBirth')?.value.trim();
         const address = document.getElementById('uAddress')?.value.trim();
+        const adminFunction = document.getElementById('uAdminFunction')?.value;
+        const adminCode = document.getElementById('uAdminCode')?.value.trim();
 
         if (!prenom || !nom || !email || !pwd || !role) { this.toast('Veuillez remplir les champs obligatoires', 'warning'); return; }
         if (pwd.length < 6) { this.toast('Mot de passe trop court (6 caract?res minimum)', 'warning'); return; }
         if (birthInput && !this.parseDateValue(birthInput)) { this.toast('Date de naissance invalide. Utilisez le format dd/mm/yyyy', 'warning'); return; }
+        if (role === 'admin' && !this.validateAdminCredentialsForRole(adminFunction, adminCode)) {
+            this.toast('Code d\'acc?s administrateur invalide pour la fonction s?lectionn?e', 'warning');
+            return;
+        }
         const existingUser = this.users.find(u => u.email && u.email.trim().toLowerCase() === email.trim().toLowerCase());
         if (existingUser) {
             this.toast('Cet utilisateur existe déjà, affichage de sa fiche.', 'info');
@@ -3304,6 +3659,10 @@ class AdminApp {
             status: 'active', documents: docs,
             createdAt: new Date().toISOString(), lastLogin: null
         };
+        if (role === 'admin') {
+            newUser.adminFunction = adminFunction;
+            newUser.codeOption = adminCode;
+        }
 
         this.users.push(newUser);
         localStorage.setItem('users', JSON.stringify(this.users));
@@ -3372,7 +3731,7 @@ class AdminApp {
                 <div class="form-group full"><label class="form-label">Email</label><input type="email" class="form-control" id="euEmail" value="${u.email||''}"></div>
                 <div class="form-group"><label class="form-label">T?l?phone</label><input type="tel" class="form-control" id="euPhone" value="${u.telephone||''}"></div>
                 <div class="form-group"><label class="form-label">R?le</label>
-                    <select class="form-select" id="euRole">
+                    <select class="form-select" id="euRole" onchange="app.toggleAdminUserFields('edit')">
                         <option value="athlete" ${(u.role||u.userType)==='athlete'?'selected':''}>Athl?te</option>
                         <option value="coach" ${(u.role||u.userType)==='coach'?'selected':''}>Coach</option>
                         <option value="parent" ${(u.role||u.userType)==='parent'?'selected':''}>Parent</option>
@@ -3390,6 +3749,21 @@ class AdminApp {
                 <div class="form-group"><label class="form-label">Adresse</label><input type="text" class="form-control" id="euAddress" value="${u.adresse||''}"></div>
                 <div class="form-group full"><label class="form-label">Nouveau mot de passe (laisser vide = inchang?)</label><input type="password" class="form-control" id="euPwd" placeholder="Nouveau mot de passe"></div>
             </div>
+            <div id="editAdminFields" style="display:${(u.role||u.userType)==='admin' ? '' : 'none'};margin-top:16px;padding:12px;border-radius:12px;background:var(--gray-50)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Fonction administrateur <span class="req">*</span></label>
+                        <select class="form-select" id="euAdminFunction">
+                            <option value="">S?lectionnez une fonction</option>
+                            ${this.buildAdminFunctionOptions(u.adminFunction || '')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Code d'acc?s <span class="req">*</span></label>
+                        <input type="text" class="form-control" id="euAdminCode" value="${u.codeOption || ''}" placeholder="Code d'acc?s exact">
+                    </div>
+                </div>
+            </div>
             <div style="margin-top:18px">
                 <h4 style="font-size:0.95rem;font-weight:700;color:var(--gray-700);margin-bottom:10px"><i class="fas fa-folder-open" style="color:var(--primary-light)"></i> Documents existants</h4>
                 <div class="docs-grid">${docsHtml}</div>
@@ -3397,23 +3771,53 @@ class AdminApp {
             `<button class="btn btn-secondary" onclick="app.closeModal()">Annuler</button>
              <button class="btn btn-primary" onclick="app.submitEditUser(${id})"><i class="fas fa-save"></i> Sauvegarder</button>`
         );
+        this.toggleAdminUserFields('edit');
     }
 
     submitEditUser(id) {
         const u = this.users.find(x => x.id === id); if (!u) return;
         const birthInput = document.getElementById('euBirth')?.value.trim();
+        const nextRole = document.getElementById('euRole')?.value;
+        const nextAdminFunction = document.getElementById('euAdminFunction')?.value;
+        const nextAdminCode = document.getElementById('euAdminCode')?.value.trim();
         if (birthInput && !this.parseDateValue(birthInput)) { this.toast('Date de naissance invalide. Utilisez le format dd/mm/yyyy', 'warning'); return; }
+        if (nextRole === 'admin' && !this.validateAdminCredentialsForRole(nextAdminFunction, nextAdminCode)) {
+            this.toast('Code d\'acc?s administrateur invalide pour la fonction s?lectionn?e', 'warning');
+            return;
+        }
         u.prenom = document.getElementById('euPrenom')?.value.trim() || u.prenom;
         u.nom = document.getElementById('euNom')?.value.trim() || u.nom;
         u.email = document.getElementById('euEmail')?.value.trim() || u.email;
         u.telephone = document.getElementById('euPhone')?.value.trim();
-        u.role = document.getElementById('euRole')?.value; u.userType = u.role;
+        u.role = nextRole; u.userType = u.role;
         u.status = document.getElementById('euStatus')?.value || u.status;
         u.dateNaissance = this.toStorageDateValue(birthInput) || '';
         u.adresse = document.getElementById('euAddress')?.value.trim();
+        if (u.role === 'admin') {
+            u.adminFunction = nextAdminFunction;
+            u.codeOption = nextAdminCode;
+        } else {
+            delete u.adminFunction;
+            delete u.codeOption;
+        }
         const newPwd = document.getElementById('euPwd')?.value;
         if (newPwd && newPwd.length >= 6) u.password = newPwd;
         localStorage.setItem('users', JSON.stringify(this.users));
+        if (this.currentUser && String(this.currentUser.id) === String(u.id)) {
+            this.currentUser = {
+                ...this.currentUser,
+                prenom: u.prenom,
+                nom: u.nom,
+                email: u.email,
+                role: u.role,
+                userType: u.userType,
+                adminFunction: u.adminFunction || ''
+            };
+            localStorage.setItem('currentSession', JSON.stringify(this.currentUser));
+            document.getElementById('adminRole').textContent = this.getAdminRoleLabel(u.adminFunction);
+            this.adminConfig = this.getAdminConfig(u.adminFunction);
+            this.applyAdminPermissions();
+        }
         this.closeModal();
         this.renderAll();
         this.toast(`Utilisateur ${u.prenom} ${u.nom} mis ? jour`, 'success');
@@ -4040,6 +4444,7 @@ class AdminApp {
         const titles = {
             dashboard:'Tableau de Bord',
             utilisateurs:'Gestion des Utilisateurs',
+            athletesAdmin:'Gestion athlètes',
             equipes:'Gestion des ?quipes',
             planning:'Planning',
             evenements:'Gestion des ?v?nements',
@@ -4055,7 +4460,12 @@ class AdminApp {
         document.getElementById('sectionTitle').textContent = titles[name] || name;
         document.getElementById('breadcrumb').textContent = titles[name] || name;
         window.location.hash = name;
+        if (!this.canViewSection(name)) {
+            this.showSection(this.getAllowedInitialSection());
+            return;
+        }
         if (name === 'utilisateurs') this.renderUsersTable();
+        if (name === 'athletesAdmin') this.renderAthleteManagement();
         if (name === 'equipes') this.renderTeamsGrid();
         if (name === 'evenements') this.renderEventsList();
         if (name === 'materiel') this.renderMaterials();
@@ -4065,6 +4475,7 @@ class AdminApp {
         if (name === 'finances') { this.renderTransactions(); this.initCharts(); }
         if (name === 'statistiques') { setTimeout(() => this.initCharts(), 100); }
         if (name === 'resultats') this.renderResults();
+        this.applySectionMode(name);
     }
 
     /* ===== HELPERS ===== */
@@ -4249,6 +4660,7 @@ class AdminApp {
 const app = new AdminApp();
 window.app = app;
 </script>
+<script src="../assets/js/admin-gallery.js"></script>
 </body>
 </html>
 
