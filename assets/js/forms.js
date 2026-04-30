@@ -92,7 +92,7 @@ function sanitizeStoredUsers(users) {
             user.documents = user.documents.map(doc => {
                 if (doc && typeof doc === 'object') {
                     delete doc.preview;
-                    if (doc.dataUrl && typeof doc.dataUrl === 'string' && doc.dataUrl.length > 220000) {
+                    if (doc.dataUrl && typeof doc.dataUrl === 'string' && doc.dataUrl.length > 1000000) {
                         delete doc.dataUrl;
                     }
                 }
@@ -128,8 +128,7 @@ async function collectAllDocuments(userType) {
     };
 
     const documents = [];
-    const today = new Date().toISOString().split('T')[0];
-    const maxDataUrlBytes = 1000000;
+    const today = getTodayDdMmYyyy();
 
     // â”€â”€ Fichiers simples (1 par champ) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     for (const [inputId, label] of Object.entries(fileLabels)) {
@@ -344,7 +343,10 @@ function initRegistrationForm() {
             }
             if (userType === 'admin') {
                 userData.adminFunction = document.getElementById('adminFunction')?.value;
-                userData.codeOption    = document.getElementById('codeOptionAdmin')?.value;
+                userData.codeOption    = document.getElementById('codeOptionAdmin')?.value?.trim();
+                if (!validateCodeOption('codeOptionAdmin', userData.codeOption)) {
+                    throw new Error("Code d'accès administrateur invalide pour la fonction sélectionnée.");
+                }
             }
             if (userType === 'parent') {
                 userData.enfants = getEnfantsData();
@@ -809,6 +811,10 @@ function formatDateForInput(value) {
 
 function normalizeStorageDate(value) {
     return window.ManarDate?.toStorage(value) || '';
+}
+
+function getTodayDdMmYyyy() {
+    return window.ManarDate?.toInputValue(new Date()) || new Date().toLocaleDateString('fr-FR');
 }
 
 /* =========================================================

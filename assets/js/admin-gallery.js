@@ -342,41 +342,45 @@
                 acceptedFormats: document.getElementById('galleryAcceptedFormats')?.value.trim() || '',
                 date: document.getElementById('galleryDate')?.value || new Date().toLocaleDateString('fr-FR')
             };
+            try {
+                if (type === 'photo') {
+                    const dataUrl = await this.readGalleryFile(primaryFile);
+                    const item = normalizePhoto({ ...baseItem, dataUrl });
+                    this.gallery.unshift(item);
+                    if (!this.isRecentGalleryItem('photo', item.id)) this.galleryRecent.unshift({ type: 'photo', id: item.id });
+                } else if (type === 'video') {
+                    const dataUrl = await this.readGalleryFile(primaryFile);
+                    const item = normalizeVideo({ ...baseItem, dataUrl });
+                    this.galleryVideos.unshift(item);
+                    if (!this.isRecentGalleryItem('video', item.id)) this.galleryRecent.unshift({ type: 'video', id: item.id });
+                } else {
+                    const items = await Promise.all(
+                        Array.from(document.querySelectorAll('.gallery-album-item'))
+                            .map((input) => input.files?.[0])
+                            .filter(Boolean)
+                            .map(async (file) => ({
+                                id: `${Date.now()}-${file.name}`,
+                                name: file.name,
+                                type: file.type.startsWith('video/') ? 'video' : 'photo',
+                                dataUrl: await this.readGalleryFile(file)
+                            }))
+                    );
 
-            if (type === 'photo') {
-                const dataUrl = await this.readGalleryFile(primaryFile);
-                const item = normalizePhoto({ ...baseItem, dataUrl });
-                this.gallery.unshift(item);
-                if (!this.isRecentGalleryItem('photo', item.id)) this.galleryRecent.unshift({ type: 'photo', id: item.id });
-            } else if (type === 'video') {
-                const dataUrl = await this.readGalleryFile(primaryFile);
-                const item = normalizeVideo({ ...baseItem, dataUrl });
-                this.galleryVideos.unshift(item);
-                if (!this.isRecentGalleryItem('video', item.id)) this.galleryRecent.unshift({ type: 'video', id: item.id });
-            } else {
-                const items = await Promise.all(
-                    Array.from(document.querySelectorAll('.gallery-album-item'))
-                        .map((input) => input.files?.[0])
-                        .filter(Boolean)
-                        .map(async (file) => ({
-                            id: `${Date.now()}-${file.name}`,
-                            name: file.name,
-                            type: file.type.startsWith('video/') ? 'video' : 'photo',
-                            dataUrl: await this.readGalleryFile(file)
-                        }))
-                );
+                    const coverDataUrl = this._selectedAlbumCover || await this.readGalleryFile(primaryFile);
+                    const item = normalizeAlbum({ ...baseItem, coverDataUrl, items });
+                    this.galleryAlbums.unshift(item);
+                    if (!this.isRecentGalleryItem('album', item.id)) this.galleryRecent.unshift({ type: 'album', id: item.id });
+                    this._selectedAlbumCover = '';
+                }
 
-                const coverDataUrl = this._selectedAlbumCover || await this.readGalleryFile(primaryFile);
-                const item = normalizeAlbum({ ...baseItem, coverDataUrl, items });
-                this.galleryAlbums.unshift(item);
-                if (!this.isRecentGalleryItem('album', item.id)) this.galleryRecent.unshift({ type: 'album', id: item.id });
-                this._selectedAlbumCover = '';
+                this.syncGalleryStorage();
+                this.closeModal();
+                this.renderGalleryGrid();
+                this.toast('Publication réussie : élément ajouté à la galerie.', 'success');
+            } catch (error) {
+                console.error('Erreur lors de la publication galerie:', error);
+                this.toast("Erreur lors de la publication. Vérifiez le fichier et réessayez.", 'error');
             }
-
-            this.syncGalleryStorage();
-            this.closeModal();
-            this.renderGalleryGrid();
-            this.toast('Galerie mise à jour avec succès.', 'success');
         };
 
         app.openRecentSelectionModal = function openRecentSelectionModal() {
